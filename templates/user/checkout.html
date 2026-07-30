@@ -9,7 +9,8 @@
         <div class="col-md-7">
             <div class="card p-4 shadow-sm mb-4">
                 <h4 class="card-title mb-3">ডেলিভারি তথ্য</h4>
-                <form action="{{ url_for('main.place_order') }}" method="POST">
+                <!-- সরাসরি ফর্মে অ্যাকশন রুট দেওয়া হয়েছে -->
+                <form action="/place-order" method="POST">
                     <div class="mb-3">
                         <label class="form-label">আপনার পূর্ণ নাম</label>
                         <input type="text" name="name" class="form-control" required placeholder="যেমন: রহিম আহমেদ">
@@ -39,18 +40,20 @@
             <div class="card p-4 shadow-sm">
                 <h4 class="card-title mb-3">অর্ডার সামারি</h4>
                 <ul class="list-group list-group-flush mb-3">
-                    {% for item in cart_items %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <h6 class="my-0">{{ item.product.name }}</h6>
-                            <small class="text-muted">পরিমাণ: {{ item.quantity }}</small>
-                        </div>
-                        <span class="text-muted">৳ {{ item.subtotal }}</span>
-                    </li>
-                    {% endfor %}
+                    {% if cart_items %}
+                        {% for item in cart_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <h6 class="my-0">{{ item.product.name }}</h6>
+                                <small class="text-muted">পরিমাণ: {{ item.quantity }}</small>
+                            </div>
+                            <span class="text-muted">৳ {{ item.subtotal }}</span>
+                        </li>
+                        {% endfor %}
+                    {% endif %}
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0 fw-bold">
                         <span>সর্বমোট</span>
-                        <span class="text-success fs-5">৳ {{ total_price }}</span>
+                        <span class="text-success fs-5">৳ {{ total_price if total_price else 0 }}</span>
                     </li>
                 </ul>
             </div>
