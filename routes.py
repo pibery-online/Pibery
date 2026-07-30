@@ -51,11 +51,17 @@ def home():
         query = query.filter(Product.name.contains(search_query))
 
     products = query.order_by(Product.created_at.desc()).all()
-    return render_template('user/index.html', products=products, categories=categories, selected_category=category_id)
+    featured_products = Product.query.filter_by(is_featured=True).limit(6).all()
+
+    return render_template('user/index.html', products=products, categories=categories, 
+                           selected_category=category_id, featured_products=featured_products)
 
 @main.route('/product/<int:id>')
 def product_detail(id):
-    product = Product.query.get_or_404(id)
+    product = db.session.get(Product, id)
+    if not product:
+        flash('পণ্যটি পাওয়া যায়নি!', 'warning')
+        return redirect(url_for('main.home'))
     return render_template('user/product.html', product=product)
 
 
@@ -63,7 +69,11 @@ def product_detail(id):
 
 @main.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
-    product = Product.query.get_or_404(product_id)
+    product = db.session.get(Product, product_id)
+    if not product:
+        flash('পণ্যটি পাওয়া যায়নি!', 'danger')
+        return redirect(url_for('main.home'))
+        
     quantity = int(request.form.get('quantity', 1))
 
     if 'cart' not in session:
@@ -88,14 +98,17 @@ def view_cart():
     total_price = 0.0
 
     for p_id, qty in cart.items():
-        product = Product.query.get(int(p_id))
+        product = db.session.get(Product, int(p_id))
         if product:
-            subtotal = product.price * qty
+            # ডিসকাউন্ট থাকলে অফার প্রাইজ হিসাব করবে
+            effective_price = product.discount_price if product.discount_price else product.price
+            subtotal = effective_price * qty
             total_price += subtotal
             cart_items.append({
                 'product': product,
                 'quantity': qty,
-                'subtotal': subtotal
+                'subtotal': subtotal,
+                'effective_price': effective_price
             })
 
     return render_template('user/cart.html', cart_items=cart_items, total_price=total_price)
@@ -135,16 +148,24 @@ def checkout():
     cart_items = []
     total_price = 0.0
     for p_id, qty in cart.items():
-        product = Product.query.get(int(p_id))
+        product = db.session.get(Product, int(p_id))
         if product:
-            subtotal = product.price * qty
+            effective_price = product.discount_price if product.discount_price else product.price
+            subtotal = effective_price * qty
             total_price += subtotal
-            cart_items.append({'product': product, 'quantity': qty, 'subtotal': subtotal})
+            cart_items.append({
+                'product': product, 
+                'quantity': qty, 
+                'subtotal': subtotal,
+                'effective_price': effective_price
+            })
 
     if request.method == 'POST':
         name = request.form.get('name')
         phone = request.form.get('phone')
         address = request.form.get('address')
+        payment_method = request.form.get('payment_method', 'Cash on Delivery')
+        transaction_id = request.form.get('transaction_id', '')
 
         user_id = current_user.id if current_user.is_authenticated else None
         order = Order(
@@ -153,7 +174,8 @@ def checkout():
             customer_phone=phone,
             customer_address=address,
             total_price=total_price,
-            payment_method='Cash on Delivery'
+            payment_method=payment_method,
+            transaction_id=transaction_id if payment_method != 'Cash on Delivery' else None
         )
         db.session.add(order)
         db.session.commit()
@@ -162,7 +184,7 @@ def checkout():
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=item['product'].id,
-                price=item['product'].price,
+                price=item['effective_price'],
                 quantity=item['quantity']
             )
             item['product'].stock -= item['quantity']
@@ -171,7 +193,7 @@ def checkout():
         db.session.commit()
         session.pop('cart', None)
 
-        flash(f'অভিনন্দন! আপনার অর্ডারটি (Order #{order.id}) সফলভাবে নিশ্চিত করা হয়েছে।', 'success')
+        flash(f'অভিনন্দন! আপনার অর্ডারটি (Order #{order.id}) সফলভাবে গ্রহণ করা হয়েছে।', 'success')
         return redirect(url_for('main.my_orders' if current_user.is_authenticated else 'main.home'))
 
     return render_template('user/checkout.html', cart_items=cart_items, total_price=total_price)
@@ -204,7 +226,6 @@ def register():
 
         hashed_pw = generate_password_hash(password)
 
-        # সিকিউরিটি রুল: ওয়েবসাইট থেকে যে কেউই রেজিস্টার করুক, সে সবসময় সাধারণ কাস্টমার (is_admin=False) হবে।
         new_user = User(
             username=username, email=email, password=hashed_pw,
             phone=phone, address=address, is_admin=False
@@ -289,9 +310,12 @@ def admin_orders():
 @login_required
 @admin_required
 def update_order_status(order_id):
-    order = Order.query.get_or_404(order_id)
+    order = db.session.get(Order, order_id)
+    if not order:
+        flash('অর্ডারটি পাওয়া যায়নি!', 'danger')
+        return redirect(url_for('main.admin_orders'))
+
     new_status = request.form.get('status')
-    
     if new_status in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']:
         order.status = new_status
         db.session.commit()
@@ -327,8 +351,11 @@ def admin_products():
         name = request.form.get('name')
         description = request.form.get('description')
         price = float(request.form.get('price'))
+        discount_price_val = request.form.get('discount_price')
+        discount_price = float(discount_price_val) if discount_price_val else None
         stock = int(request.form.get('stock'))
         category_id = int(request.form.get('category_id'))
+        is_featured = True if request.form.get('is_featured') else False
         
         image_file = request.files.get('image')
         filename = 'default.jpg'
@@ -336,12 +363,19 @@ def admin_products():
         if image_file and allowed_file(image_file.filename):
             orig_filename = secure_filename(image_file.filename)
             filename = f"{os.urandom(8).hex()}_{orig_filename}"
-            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            
+            # আপলোড ফোল্ডার না থাকলে বানিয়ে নেবে
+            upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+
+            upload_path = os.path.join(upload_folder, filename)
             image_file.save(upload_path)
 
         new_product = Product(
             name=name, description=description, price=price,
-            stock=stock, category_id=category_id, image=filename
+            discount_price=discount_price, stock=stock, 
+            category_id=category_id, image=filename, is_featured=is_featured
         )
         db.session.add(new_product)
         db.session.commit()
@@ -356,8 +390,11 @@ def admin_products():
 @login_required
 @admin_required
 def delete_product(id):
-    product = Product.query.get_or_404(id)
-    db.session.delete(product)
-    db.session.commit()
-    flash('পণ্যটি সফলভাবে মুছে ফেলা হয়েছে!', 'info')
+    product = db.session.get(Product, id)
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        flash('পণ্যটি সফলভাবে মুছে ফেলা হয়েছে!', 'info')
+    else:
+        flash('পণ্যটি পাওয়া যায়নি!', 'warning')
     return redirect(url_for('main.admin_products'))
