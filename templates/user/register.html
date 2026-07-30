@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}অ্যাকাউন্ট খুলুন - Pibery{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 rounded-3">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0"><i class="fa-solid fa-user-plus me-2"></i>নতুন অ্যাকাউন্ট খুলুন</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('main.register') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">আপনার নাম</label>
+                        <input type="text" name="username" class="form-control" required placeholder="উদাহরণ: Rahat Islam">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ইমেইল এড্রেস</label>
+                        <input type="email" name="email" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">মোবাইল নম্বর</label>
+                        <input type="text" name="phone" class="form-control" placeholder="017xxxxxxxx">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ডেলিভারি ঠিকানা</label>
+                        <textarea name="address" class="form-control" rows="2" placeholder="বাসা/রোড নম্বর, এলাকা, শহর"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">পাসওয়ার্ড</label>
+                        <input type="password" name="password" class="form-control" required placeholder="********">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">রেজিস্ট্রেশন সম্পন্ন করুন</button>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3">
+                <span>আগে থেকেই অ্যাকাউন্ট আছে? <a href="{{ url_for('main.login') }}" class="text-primary fw-bold">লগইন করুন</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

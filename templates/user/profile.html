@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}প্রোফাইল - {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-8">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0"><i class="fa-solid fa-id-card me-2"></i>আমার প্রোফাইল</h4>
+            </div>
+            <div class="card-body p-4">
+                <table class="table table-striped">
+                    <tr>
+                        <th>নাম:</th>
+                        <td>{{ current_user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>ইমেইল:</th>
+                        <td>{{ current_user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>ফোন:</th>
+                        <td>{{ current_user.phone or 'দেওয়া হয়নি' }}</td>
+                    </tr>
+                    <tr>
+                        <th>ঠিকানা:</th>
+                        <td>{{ current_user.address or 'দেওয়া হয়নি' }}</td>
+                    </tr>
+                    <tr>
+                        <th>অ্যাকাউন্ট টাইপ:</th>
+                        <td>
+                            {% if current_user.is_admin %}
+                                <span class="badge bg-danger">Admin</span>
+                            {% else %}
+                                <span class="badge bg-success">Customer</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
