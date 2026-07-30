@@ -11,8 +11,15 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 1.5rem; }
-        .footer { background-color: #212529; color: white; padding: 25px 0; margin-top: 50px; }
+        .footer { background-color: #1a1d20; color: #e0e0e0; padding: 40px 0 20px 0; margin-top: 50px; }
+        .footer a { color: #0d6efd; text-decoration: none; transition: 0.3s; }
+        .footer a:hover { color: #0b5ed7; text-decoration: underline; }
         .badge-cart { font-size: 0.75rem; padding: 4px 7px; }
+        .social-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: #fff; text-decoration: none; transition: 0.3s; }
+        .btn-fb { background-color: #1877f2; }
+        .btn-yt { background-color: #ff0000; }
+        .btn-wa { background-color: #25d366; }
+        .social-btn:hover { opacity: 0.85; color: #fff; }
     </style>
 </head>
 <body>
@@ -90,10 +97,54 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer text-center">
+    <footer class="footer">
         <div class="container">
-            <p class="mb-1">&copy; 2026 Pibery Online Shopping. All Rights Reserved.</p>
-            <small class="text-muted">Designed for fast & seamless online shopping in Bangladesh.</small>
+            <div class="row g-4 text-start">
+                <!-- শপ সম্পর্কিত তথ্য -->
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-primary mb-3">🛍️ Pibery</h5>
+                    <p class="small text-muted mb-3">
+                        আপনার বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। আমরা সাশ্রয়ী মূল্যে সেরা মানের পণ্য সরাসরি আপনার দরগোড়ায় পৌঁছে দিতে প্রতিশ্রুতিবদ্ধ।
+                    </p>
+                    <a href="https://wa.me/8801612700089" target="_blank" class="btn btn-sm btn-success fw-bold">
+                        <i class="fa-brands fa-whatsapp me-1"></i> WhatsApp-এ কথা বলুন
+                    </a>
+                </div>
+
+                <!-- যোগাযোগের ঠিকানা -->
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-headset me-2 text-warning"></i>যোগাযোগ</h5>
+                    <ul class="list-unstyled small text-muted mb-0">
+                        <li class="mb-2"><i class="fa-solid fa-location-dot me-2 text-primary"></i>Chhatak, Sunamganj, Sylhet, Bangladesh</li>
+                        <li class="mb-2"><i class="fa-solid fa-phone me-2 text-success"></i>01612700089</li>
+                        <li class="mb-2"><i class="fa-solid fa-wallet me-2 text-danger"></i>পেমেন্ট (bKash/Nagad/Rocket): <span class="text-white fw-bold">01612700089</span></li>
+                    </ul>
+                </div>
+
+                <!-- সোশ্যাল মিডিয়া ও লিংক -->
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-share-nodes me-2 text-info"></i>আমাদের সাথে যুক্ত থাকুন</h5>
+                    <p class="small text-muted mb-3">অফার এবং নিয়মিত আপডেটের জন্য আমাদের সামাজিক যোগাযোগ মাধ্যমে ফলো করুন:</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <a href="https://www.facebook.com/profile.php?id=61591861076670" target="_blank" class="social-btn btn-fb" title="Facebook Page">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="https://youtube.com/@pibery?si=HXqoZ_bIO3IIsSaU" target="_blank" class="social-btn btn-yt" title="YouTube Channel">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                        <a href="https://wa.me/8801612700089" target="_blank" class="social-btn btn-wa" title="WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4 border-secondary">
+
+            <div class="text-center small text-muted">
+                <p class="mb-1">&copy; 2026 Pibery Online Shopping. All Rights Reserved.</p>
+                <small>Designed for fast & seamless online shopping in Bangladesh.</small>
+            </div>
         </div>
     </footer>
 
