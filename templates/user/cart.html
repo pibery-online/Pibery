@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}আমার কার্ট - Pibery{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4"><i class="bi bi-cart3"></i> শপিং কার্ট</h2>
+    
+    {% if cart_items %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>পণ্য</th>
+                    <th>মূল্য</th>
+                    <th>পরিমাণ</th>
+                    <th>মোট</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if item.product.image_url %}
+                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; class="rounded me-3">
+                            {% endif %}
+                            <span>{{ item.product.name }}</span>
+                        </div>
+                    </td>
+                    <td>৳ {{ item.product.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>৳ {{ item.subtotal }}</td>
+                    <td>
+                        <a href="{{ url_for('main.remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> মুছুন
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-4 align-items-center">
+        <div class="col-md-6">
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> আরও কেনাকাটা করুন
+            </a>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <h4>সর্বমোট: <span class="text-success">৳ {{ total_price }}</span></h4>
+            <a href="{{ url_for('main.checkout') }}" class="btn btn-success btn-lg mt-2">
+                অর্ডার সম্পন্ন করুন <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">আপনার কার্ট বর্তমানে খালি!</h4>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">কেনাকাটা শুরু করুন</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
