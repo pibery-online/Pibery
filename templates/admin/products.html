@@ -1,148 +1,111 @@
 {% extends 'base.html' %}
-
-{% block title %}পণ্য ম্যানেজমেন্ট - এডমিন{% endblock %}
+{% block title %}পণ্য ব্যবস্থাপনা - Admin{% endblock %}
 
 {% block content %}
-<div class="container my-4">
+<div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold text-dark"><i class="fa-solid fa-box text-warning me-2"></i>পণ্য ম্যানেজমেন্ট</h3>
-        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fa-solid fa-arrow-left me-1"></i> ড্যাশবোর্ড
-        </a>
+        <h2><i class="bi bi-box-seam"></i> পণ্য ব্যবস্থাপনা</h2>
     </div>
 
-    <!-- ১. নতুন পণ্য যোগ করার ফর্ম -->
-    <div class="card shadow-sm border-0 rounded-3 mb-5">
-        <div class="card-header bg-dark text-white fw-bold py-3">
-            <i class="fa-solid fa-plus me-1"></i> নতুন পণ্য যুক্ত করুন
-        </div>
-        <div class="card-body p-4">
-            <form action="{{ url_for('main.admin_products') }}" method="POST" enctype="multipart/form-data">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="name" class="form-label fw-bold">পণ্যের নাম</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                    </div>
+    <!-- প্রোডাক্ট এড করার ফর্ম -->
+    <div class="card p-4 shadow-sm mb-5">
+        <h4 class="mb-3">নতুন পণ্য যোগ করুন</h4>
+        <form action="{{ url_for('main.admin_products') }}" method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">পণ্যের নাম</label>
+                    <input type="text" name="name" class="form-control" required placeholder="যেমন: Wireless Headphone">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">মূল্য (৳)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required placeholder="1200">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">ডিসকাউন্ট মূল্য (যদি থাকে)</label>
+                    <input type="number" step="0.01" name="discount_price" class="form-control" placeholder="1000">
+                </div>
+            </div>
 
-                    <div class="col-md-3">
-                        <label for="category_id" class="form-label fw-bold">ক্যাটাগরি</label>
-                        <select class="form-select" id="category_id" name="category_id" required>
-                            <option value="" selected disabled>ক্যাটাগরি নির্বাচন করুন</option>
-                            {% for cat in categories %}
-                                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="stock" class="form-label fw-bold">স্টক পরিমাণ</label>
-                        <input type="number" class="form-control" id="stock" name="stock" value="10" required>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="price" class="form-label fw-bold">মূল দাম (৳)</label>
-                        <input type="number" step="0.01" class="form-control" id="price" name="price" placeholder="1000" required>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="discount_price" class="form-label fw-bold">অফার/ছাড়ের দাম (৳)</label>
-                        <input type="number" step="0.01" class="form-control" id="discount_price" name="discount_price" placeholder="800 (ঐচ্ছিক)">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="image" class="form-label fw-bold">পণ্যের ছবি</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                    </div>
-
-                    <div class="col-md-12">
-                        <label for="description" class="form-label fw-bold">পণ্যের বিবরণ</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="পণ্যের গুণাবলী ও বিবরণ লিখুন..."></textarea>
-                    </div>
-
-                    <div class="col-md-12">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1">
-                            <label class="form-check-input-label fw-bold text-danger" for="is_featured">
-                                স্পেশাল অফার / ফিচার্ড প্রোডাক্ট হিসেবে হোমপেজে দেখান
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-12">
-                        <button type="submit" class="btn btn-success fw-bold px-4">
-                            <i class="fa-solid fa-cloud-arrow-up me-1"></i> সেভ করুন
-                        </button>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">স্টক পরিমাণ</label>
+                    <input type="number" name="stock" class="form-control" value="10" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">ক্যাটাগরি</label>
+                    <select name="category_id" class="form-select" required>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3 align-self-end">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured">
+                        <label class="form-check-label" for="is_featured">
+                            Featured Product (হোমপেজে স্পেশাল দেখাবে)
+                        </label>
                     </div>
                 </div>
-            </form>
-        </div>
+            </div>
+
+            <!-- ডিরেক্ট ছবি লিংক ও ফাইল আপলোড ইনপুট -->
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Direct Photo URL (ছবি লিংক / একাধিক ছবির লিংক)</label>
+                    <input type="text" name="image_urls" class="form-control" placeholder="https://i.ibb.co/photo1.jpg, https://i.ibb.co/photo2.jpg">
+                    <small class="text-muted">💡 ImgBB বা অন্য অনলাইন ইমেজের ডিরেক্ট লিংক দিন। একের বেশি ছবি দিতে কমা ( , ) ব্যবহার করুন।</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">অথবা ফাইল আপলোড করুন</label>
+                    <input type="file" name="image" class="form-control">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">পণ্যের বিবরণ (Description)</label>
+                <textarea name="description" class="form-control" rows="3" placeholder="পণ্যের বিস্তারিত বিবরণ লিখুন..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success"><i class="bi bi-plus-lg"></i> পণ্য সংরক্ষণ করুন</button>
+        </form>
     </div>
 
-    <!-- ২. বিদ্যমান পণ্যের তালিকা -->
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-secondary text-white fw-bold py-3">
-            <i class="fa-solid fa-list me-1"></i> মোট পণ্যের তালিকা ({{ products|length }})
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ছবি</th>
-                            <th>পণ্যের নাম</th>
-                            <th>ক্যাটাগরি</th>
-                            <th>দাম</th>
-                            <th>স্টক</th>
-                            <th>স্ট্যাটাস</th>
-                            <th class="text-end">অ্যাকশন</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products %}
-                        <tr>
-                            <td>
-                                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="rounded border" width="50" height="50" style="object-fit: cover;">
-                            </td>
-                            <td>
-                                <strong class="d-block">{{ product.name }}</strong>
-                                {% if product.is_featured %}<span class="badge bg-danger fs-7">Featured</span>{% endif %}
-                            </td>
-                            <td>{{ product.category.name if product.category else 'N/A' }}</td>
-                            <td>
-                                {% if product.discount_price %}
-                                    <span class="text-success fw-bold">৳{{ "%.0f"|format(product.discount_price) }}</span>
-                                    <small class="text-muted text-decoration-line-through">৳{{ "%.0f"|format(product.price) }}</small>
-                                {% else %}
-                                    ৳{{ "%.0f"|format(product.price) }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if product.stock > 0 %}
-                                    <span class="badge bg-success">{{ product.stock }} টি</span>
-                                {% else %}
-                                    <span class="badge bg-danger">স্টক আউট</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if product.stock > 0 %}
-                                    <span class="text-success small fw-bold">অ্যাভেলেবল</span>
-                                {% else %}
-                                    <span class="text-danger small fw-bold">স্টক নাই</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">
-                                <form action="{{ url_for('main.delete_product', id=product.id) }}" method="POST" class="d-inline" onsubmit="return confirm('আপনি কি নিশ্চিত এই পণ্যটি মুছে ফেলতে চান?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <!-- প্রোডাক্ট টেবিল -->
+    <h4>বর্তমান পণ্য তালিকা</h4>
+    <div class="table-responsive card p-3 shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ছবি</th>
+                    <th>নাম</th>
+                    <th>মূল্য</th>
+                    <th>স্টক</th>
+                    <th>অ্যাকশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if 'http' in product.image %}
+                            <img src="{{ product.image.split(',')[0] }}" alt="{{ product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                        {% endif %}
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>৳ {{ product.discount_price if product.discount_price else product.price }}</td>
+                    <td>{{ product.stock }}</td>
+                    <td>
+                        <form action="{{ url_for('main.delete_product', id=product.id) }}" method="POST" class="d-inline" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই পণ্যটি মুছে ফেলতে চান?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> মুছুন</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
