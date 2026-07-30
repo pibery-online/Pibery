@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Pibery{% endblock %}
+
+{% block content %}
+<div class="my-4">
+    <h2 class="fw-bold text-dark mb-4"><i class="fa-solid fa-gauge-high me-2"></i>এডমিন কন্ট্রোল প্যানেল</h2>
+    
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 shadow-sm rounded-3">
+                <h5><i class="fa-solid fa-box me-2"></i>মোট পণ্য</h5>
+                <h2 class="fw-bold mb-0">{{ total_products }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 shadow-sm rounded-3">
+                <h5><i class="fa-solid fa-list me-2"></i>ক্যাটাগরি</h5>
+                <h2 class="fw-bold mb-0">{{ total_categories }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3 shadow-sm rounded-3">
+                <h5><i class="fa-solid fa-shopping-cart me-2"></i>মোট অর্ডার</h5>
+                <h2 class="fw-bold mb-0">{{ total_orders }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3 shadow-sm rounded-3">
+                <h5><i class="fa-solid fa-users me-2"></i>গ্রাহক সংখ্যা</h5>
+                <h2 class="fw-bold mb-0">{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <a href="{{ url_for('main.admin_products') }}" class="btn btn-outline-primary btn-lg w-100 py-3 shadow-sm mb-3">
+                <i class="fa-solid fa-plus-circle me-2"></i>পণ্য যোগ ও পরিচালনা করুন
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{{ url_for('main.admin_categories') }}" class="btn btn-outline-success btn-lg w-100 py-3 shadow-sm mb-3">
+                <i class="fa-solid fa-tags me-2"></i>ক্যাটাগরি পরিচালনা করুন
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

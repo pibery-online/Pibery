@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Management - Pibery Admin{% endblock %}
+
+{% block content %}
+<div class="my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fa-solid fa-box me-2"></i>পণ্য পরিচালনা</h3>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary">ড্যাশবোর্ডে ফিরুন</a>
+    </div>
+
+    <!-- Add Product Form -->
+    <div class="card shadow-sm border-0 p-4 mb-5">
+        <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-plus me-2"></i>নতুন পণ্য যোগ করুন</h5>
+        {% if not categories %}
+            <div class="alert alert-warning">
+                ⚠️ পণ্য যোগ করার পূর্বে অন্তত একটি <strong>ক্যাটাগরি</strong> তৈরি করে নিন। <a href="{{ url_for('main.admin_categories') }}" class="fw-bold">এখানে ক্লিক করুন</a>।
+            </div>
+        {% else %}
+        <form action="{{ url_for('main.admin_products') }}" method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">পণ্যের নাম</label>
+                    <input type="text" name="name" class="form-control" required placeholder="উদাহরণ: T-Shirt Premium Edition">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">ক্যাটাগরি নির্বাচন করুন</label>
+                    <select name="category_id" class="form-select" required>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">মূল্য (৳ BDT)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required placeholder="500">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">স্টক পরিমাণ</label>
+                    <input type="number" name="stock" class="form-control" required placeholder="10">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">পণ্যের ছবি</label>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">পণ্যের বিবরণ</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="পণ্যের গুণাগুণ ও বিবরণ লিখুন..."></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success px-4 font-weight-bold">পণ্য সেভ করুন</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Products Table -->
+    <div class="card shadow-sm border-0 p-3">
+        <h5 class="fw-bold text-dark mb-3">পণ্য সমূহের তালিকা</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ছবি</th>
+                        <th>নাম</th>
+                        <th>ক্যাটাগরি</th>
+                        <th>মূল্য</th>
+                        <th>স্টক</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td>
+                            <img src="{{ url_for('static', filename='uploads/' + p.image) }}" alt="{{ p.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded border">
+                        </td>
+                        <td class="fw-bold">{{ p.name }}</td>
+                        <td><span class="badge bg-secondary">{{ p.category.name }}</span></td>
+                        <td class="text-success fw-bold">৳ {{ "%.2f"|format(p.price) }}</td>
+                        <td>{{ p.stock }} টি</td>
+                        <td>
+                            <form action="{{ url_for('main.delete_product', id=p.id) }}" method="POST" onsubmit="return confirm('আপনি কি নিশ্চিতভাবে এই পণ্যটি ডিলিট করতে চান?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">কোনো পণ্য যুক্ত করা হয়নি।</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

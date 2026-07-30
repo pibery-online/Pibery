@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Category Management - Pibery Admin{% endblock %}
+
+{% block content %}
+<div class="my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fa-solid fa-tags me-2"></i>ক্যাটাগরি ম্যানেজমেন্ট</h3>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary">ড্যাশবোর্ডে ফিরুন</a>
+    </div>
+
+    <div class="row">
+        <!-- Add Category Form -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 p-3">
+                <h5 class="fw-bold text-primary mb-3">নতুন ক্যাটাগরি তৈরি করুন</h5>
+                <form action="{{ url_for('main.admin_categories') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">ক্যাটাগরির নাম</label>
+                        <input type="text" name="name" class="form-control" placeholder="যেমন: Clothing, Shoes" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">ক্যাটাগরি সেভ করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Category List Table -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 p-3">
+                <h5 class="fw-bold text-dark mb-3">সকল ক্যাটাগরি তালিকা</h5>
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#ID</th>
+                            <th>ক্যাটাগরির নাম</th>
+                            <th>মোট পণ্য সংখ্যা</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in categories %}
+                        <tr>
+                            <td>{{ cat.id }}</td>
+                            <td class="fw-bold">{{ cat.name }}</td>
+                            <td><span class="badge bg-secondary">{{ cat.products|length }} টি</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">কোনো ক্যাটাগরি পাওয়া যায়নি।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

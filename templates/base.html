@@ -12,6 +12,7 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 1.5rem; }
         .footer { background-color: #212529; color: white; padding: 25px 0; margin-top: 50px; }
+        .badge-cart { font-size: 0.75rem; padding: 4px 7px; }
     </style>
 </head>
 <body>
@@ -27,11 +28,37 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">হোম</a></li>
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    <!-- Shopping Cart Link -->
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light text-white position-relative px-3 my-1 my-lg-0" href="{{ url_for('main.view_cart') }}">
+                            <i class="fa-solid fa-cart-shopping"></i> কার্ট
+                            {% if cart_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-cart">
+                                    {{ cart_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    
                     {% if current_user.is_authenticated %}
+                        <!-- Admin Dropdown Menu -->
                         {% if current_user.is_admin %}
-                            <li class="nav-item"><a class="nav-link text-warning fw-bold" href="#">এডমিন প্যানেল</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fa-solid fa-gauge-high"></i> এডমিন প্যানেল
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_dashboard') }}"><i class="fa-solid fa-chart-line me-2 text-primary"></i>ড্যাশবোর্ড</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_orders') }}"><i class="fa-solid fa-truck-ramp-box me-2 text-success"></i>অর্ডার ম্যানেজমেন্ট</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_products') }}"><i class="fa-solid fa-box me-2 text-warning"></i>পণ্য ম্যানেজমেন্ট</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.admin_categories') }}"><i class="fa-solid fa-tags me-2 text-info"></i>ক্যাটাগরি ম্যানেজমেন্ট</a></li>
+                                </ul>
+                            </li>
                         {% endif %}
+                        
+                        <!-- Customer Links -->
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.my_orders') }}"><i class="fa-solid fa-box-open"></i> আমার অর্ডার</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}"><i class="fa-solid fa-user"></i> {{ current_user.username }}</a></li>
                         <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('main.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</a></li>
                     {% else %}
@@ -48,7 +75,7 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
                         {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
@@ -58,7 +85,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container min-vh-100">
+    <div class="container min-vh-100 py-3">
         {% block content %}{% endblock %}
     </div>
 

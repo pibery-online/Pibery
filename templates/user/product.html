@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Pibery{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row bg-white p-4 rounded-3 shadow-sm align-items-center">
+        <div class="col-md-5 text-center mb-4 mb-md-0">
+            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="img-fluid rounded border" alt="{{ product.name }}" style="max-height: 350px; object-fit: contain;">
+        </div>
+        <div class="col-md-7">
+            <span class="badge bg-secondary mb-2">{{ product.category.name }}</span>
+            <h2 class="fw-bold mb-3">{{ product.name }}</h2>
+            <h3 class="text-primary fw-bold mb-3">৳ {{ "%.2f"|format(product.price) }}</h3>
+            
+            <p class="text-muted mb-4">{{ product.description or 'এই পণ্যের কোনো বিবরণ যোগ করা হয়নি।' }}</p>
+            
+            <div class="mb-3">
+                {% if product.stock > 0 %}
+                    <span class="badge bg-success">স্টক আছে: {{ product.stock }} টি</span>
+                {% else %}
+                    <span class="badge bg-danger">স্টক শেষ!</span>
+                {% endif %}
+            </div>
+
+            {% if product.stock > 0 %}
+            <form action="#" method="POST" class="d-flex align-items-center gap-3">
+                <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control" style="width: 80px;">
+                <button type="button" class="btn btn-primary btn-lg px-4"><i class="fa-solid fa-cart-plus me-2"></i>কার্টে যোগ করুন</button>
+            </form>
+            {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>স্টক আউট</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
