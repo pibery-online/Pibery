@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -15,7 +15,7 @@ class User(db.Model, UserMixin):
     phone = db.Column(db.String(20), nullable=True)
     address = db.Column(db.Text, nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationship
     orders = db.relationship('Order', backref='user', lazy=True)
@@ -46,10 +46,12 @@ class Product(db.Model):
     name = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
+    discount_price = db.Column(db.Float, nullable=True) # অফার প্রাইজ
     stock = db.Column(db.Integer, default=0, nullable=False)
     image = db.Column(db.String(255), default='default.jpg')
+    is_featured = db.Column(db.Boolean, default=False) # ফিচার্ড প্রোডাক্ট হিসেবে হোমপেজে দেখানোর জন্য
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -67,7 +69,8 @@ class Order(db.Model):
     total_price = db.Column(db.Float, nullable=False, default=0.0)
     status = db.Column(db.String(50), default='Pending') # Pending, Processing, Shipped, Delivered, Cancelled
     payment_method = db.Column(db.String(50), default='Cash on Delivery')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    transaction_id = db.Column(db.String(100), nullable=True) # বিকাশ/নগদ TrxID সংরক্ষণের জন্য
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationship
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
