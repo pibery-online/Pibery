@@ -22,10 +22,18 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            {% if item.product.image_url %}
-                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; class="rounded me-3">
+                            <!-- ছবির এরর এড়ানোর জন্য নিরাপদ চেক -->
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-3">
+                            {% elif item.product.image_url %}
+                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-3">
+                            {% else %}
+                                <div class="bg-light rounded text-center d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
                             {% endif %}
-                            <span>{{ item.product.name }}</span>
+                            
+                            <span class="fw-bold">{{ item.product.name }}</span>
                         </div>
                     </td>
                     <td>৳ {{ item.product.price }}</td>
