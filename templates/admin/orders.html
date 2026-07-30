@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}অর্ডার ম্যানেজমেন্ট - এডমিন{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold"><i class="fa-solid fa-truck-ramp-box text-success me-2"></i>অর্ডার ম্যানেজমেন্ট</h3>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> ড্যাশবোর্ড
+        </a>
+    </div>
+
+    <!-- ফিল্টার বাটন -->
+    <div class="mb-4 d-flex flex-wrap gap-2">
+        <a href="{{ url_for('main.admin_orders') }}" class="btn btn-sm {% if not current_status %}btn-dark{% else %}btn-outline-dark{% endif %}">সব অর্ডার</a>
+        <a href="{{ url_for('main.admin_orders', status='Pending') }}" class="btn btn-sm {% if current_status == 'Pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">Pending</a>
+        <a href="{{ url_for('main.admin_orders', status='Processing') }}" class="btn btn-sm {% if current_status == 'Processing' %}btn-info{% else %}btn-outline-info{% endif %}">Processing</a>
+        <a href="{{ url_for('main.admin_orders', status='Shipped') }}" class="btn btn-sm {% if current_status == 'Shipped' %}btn-primary{% else %}btn-outline-primary{% endif %}">Shipped</a>
+        <a href="{{ url_for('main.admin_orders', status='Delivered') }}" class="btn btn-sm {% if current_status == 'Delivered' %}btn-success{% else %}btn-outline-success{% endif %}">Delivered</a>
+        <a href="{{ url_for('main.admin_orders', status='Cancelled') }}" class="btn btn-sm {% if current_status == 'Cancelled' %}btn-danger{% else %}btn-outline-danger{% endif %}">Cancelled</a>
+    </div>
+
+    <!-- অর্ডার টেবিল -->
+    {% if orders %}
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>কাস্টমার তথ্য</th>
+                            <th>পেমেন্ট তথ্য</th>
+                            <th>পণ্যসমূহ</th>
+                            <th>মোট মূল্য</th>
+                            <th>স্ট্যাটাস</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>
+                                <div><strong>{{ order.customer_name }}</strong></div>
+                                <small class="text-muted d-block"><i class="fa-solid fa-phone me-1"></i>{{ order.customer_phone }}</small>
+                                <small class="text-muted"><i class="fa-solid fa-location-dot me-1"></i>{{ order.customer_address }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if order.payment_method == 'bKash' %}bg-danger{% elif order.payment_method == 'Nagad' %}bg-warning text-dark{% elif order.payment_method == 'Rocket' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {{ order.payment_method }}
+                                </span>
+                                {% if order.transaction_id %}
+                                    <div class="small fw-bold text-success mt-1">TrxID: {{ order.transaction_id }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <ul class="list-unstyled mb-0 small">
+                                    {% for item in order.items %}
+                                        <li>• {{ item.product.name if item.product else 'পণ্য মোছা হয়েছে' }} (x{{ item.quantity }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="fw-bold text-success">৳{{ "%.2f"|format(order.total_price) }}</td>
+                            <td>
+                                {% if order.status == 'Pending' %}<span class="badge bg-warning text-dark">Pending</span>
+                                {% elif order.status == 'Processing' %}<span class="badge bg-info">Processing</span>
+                                {% elif order.status == 'Shipped' %}<span class="badge bg-primary">Shipped</span>
+                                {% elif order.status == 'Delivered' %}<span class="badge bg-success">Delivered</span>
+                                {% else %}<span class="badge bg-danger">Cancelled</span>{% endif %}
+                            </td>
+                            <td>
+                                <form action="{{ url_for('main.update_order_status', order_id=order.id) }}" method="POST" class="d-flex gap-1">
+                                    <select name="status" class="form-select form-select-sm" style="width: 110px;">
+                                        <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                        <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                        <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-success" title="Save Status"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center my-4">কোনো অর্ডার পাওয়া যায়নি!</div>
+    {% endif %}
+</div>
+{% endblock %}

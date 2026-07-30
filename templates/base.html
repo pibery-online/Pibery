@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="bn" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,17 +9,15 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s; }
         .navbar-brand { font-weight: bold; color: #0d6efd !important; font-size: 1.5rem; }
-        .footer { background-color: #1a1d20; color: #e0e0e0; padding: 40px 0 20px 0; margin-top: 50px; }
-        .footer a { color: #0d6efd; text-decoration: none; transition: 0.3s; }
-        .footer a:hover { color: #0b5ed7; text-decoration: underline; }
+        .footer { padding: 40px 0 20px 0; margin-top: 50px; }
         .badge-cart { font-size: 0.75rem; padding: 4px 7px; }
         .social-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: #fff; text-decoration: none; transition: 0.3s; }
         .btn-fb { background-color: #1877f2; }
         .btn-yt { background-color: #ff0000; }
         .btn-wa { background-color: #25d366; }
-        .social-btn:hover { opacity: 0.85; color: #fff; }
+        .theme-toggle-btn { cursor: pointer; border: none; background: transparent; color: #fff; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -28,10 +26,18 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.home') }}">🛍️ Pibery</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            
+            <div class="d-flex align-items-center gap-2 order-lg-3 ms-auto ms-lg-0">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn px-2" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse order-lg-2" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">হোম</a></li>
                 </ul>
@@ -49,7 +55,6 @@
                     </li>
                     
                     {% if current_user.is_authenticated %}
-                        <!-- Admin Dropdown Menu -->
                         {% if current_user.is_admin %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" role="button" data-bs-toggle="dropdown">
@@ -63,8 +68,6 @@
                                 </ul>
                             </li>
                         {% endif %}
-                        
-                        <!-- Customer Links -->
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.my_orders') }}"><i class="fa-solid fa-box-open"></i> আমার অর্ডার</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profile') }}"><i class="fa-solid fa-user"></i> {{ current_user.username }}</a></li>
                         <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('main.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</a></li>
@@ -97,10 +100,9 @@
     </div>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer bg-dark text-light">
         <div class="container">
             <div class="row g-4 text-start">
-                <!-- শপ সম্পর্কিত তথ্য -->
                 <div class="col-md-4">
                     <h5 class="fw-bold text-primary mb-3">🛍️ Pibery</h5>
                     <p class="small text-muted mb-3">
@@ -111,7 +113,6 @@
                     </a>
                 </div>
 
-                <!-- যোগাযোগের ঠিকানা -->
                 <div class="col-md-4">
                     <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-headset me-2 text-warning"></i>যোগাযোগ</h5>
                     <ul class="list-unstyled small text-muted mb-0">
@@ -121,7 +122,6 @@
                     </ul>
                 </div>
 
-                <!-- সোশ্যাল মিডিয়া ও লিংক -->
                 <div class="col-md-4">
                     <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-share-nodes me-2 text-info"></i>আমাদের সাথে যুক্ত থাকুন</h5>
                     <p class="small text-muted mb-3">অফার এবং নিয়মিত আপডেটের জন্য আমাদের সামাজিক যোগাযোগ মাধ্যমে ফলো করুন:</p>
@@ -150,5 +150,32 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dark/Light Theme Switcher Script -->
+    <script>
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
+
+        // চেক ব্রাউজার লোকাল স্টোরেজ
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-bs-theme', currentTheme);
+        updateIcon(currentTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            let newTheme = htmlElement.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+
+        function updateIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.className = 'fa-solid fa-sun text-warning';
+            } else {
+                themeIcon.className = 'fa-solid fa-moon text-white';
+            }
+        }
+    </script>
 </body>
 </html>
