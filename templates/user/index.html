@@ -1,52 +1,126 @@
 {% extends 'base.html' %}
 
-{% block title %}Pibery - Bangladesh's Trusted Online Store{% endblock %}
+{% block title %}হোম - Pibery Online Shopping{% endblock %}
 
 {% block content %}
-<div class="p-4 p-md-5 mb-4 bg-primary text-white rounded-3 mt-3 shadow-sm text-center">
-    <h1 class="display-6 fw-bold">Pibery-তে আপনাকে স্বাগতম! 🎉</h1>
-    <p class="fs-5">আপনার পছন্দের সেরা পণ্য অর্ডার করুন সরাসরি ক্যাশ অন ডেলিভারিতে।</p>
-    
-    <!-- Search Bar -->
-    <form action="{{ url_for('main.home') }}" method="GET" class="d-flex justify-content-center mt-3 max-w-500 mx-auto">
-        <input type="text" name="search" class="form-control form-control-lg me-2" placeholder="পণ্য খুঁজুন..." value="{{ request.args.get('search', '') }}">
-        <button type="submit" class="btn btn-warning btn-lg"><i class="fa-solid fa-magnifying-glass"></i></button>
-    </form>
-</div>
-
-<!-- Category Pills -->
-<div class="mb-4 text-center">
-    <a href="{{ url_for('main.home') }}" class="btn btn-sm {% if not selected_category %}btn-dark{% else %}btn-outline-dark{% endif %} me-1 mb-1">সকল পণ্য</a>
-    {% for cat in categories %}
-        <a href="{{ url_for('main.home', category_id=cat.id) }}" class="btn btn-sm {% if selected_category == cat.id %}btn-dark{% else %}btn-outline-dark{% endif %} me-1 mb-1">
-            {{ cat.name }}
+<!-- ১. হিরো ব্যানার (Hero Banner) -->
+<div class="p-4 p-md-5 mb-4 text-white rounded-3 bg-gradient bg-primary shadow-sm">
+    <div class="col-md-8 px-0">
+        <h1 class="display-5 fw-bold">Pibery-তে আপনাকে স্বাগতম! 🎉</h1>
+        <p class="lead my-3">সেরা ব্র্যান্ডের আকর্ষণীয় পণ্য কিনুন সবচেয়ে সাশ্রয়ী মূল্যে। দ্রুত হোম ডেলিভারি ও ক্যাশ অন ডেলিভারি সুবিধা!</p>
+        <a href="#products-section" class="btn btn-warning btn-lg fw-bold px-4 text-dark shadow-sm">
+            <i class="fa-solid fa-bag-shopping me-1"></i> কেনাকাটা শুরু করুন
         </a>
-    {% endfor %}
+    </div>
 </div>
 
-<!-- Product Grid -->
-<div class="container my-4">
-    <div class="row g-4">
-        {% for product in products %}
-        <div class="col-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 rounded-3">
-                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 180px; object-fit: cover;">
-                <div class="card-body d-flex flex-column">
-                    <small class="text-muted mb-1">{{ product.category.name }}</small>
-                    <h6 class="card-title fw-bold text-dark text-truncate">{{ product.name }}</h6>
-                    <div class="mt-auto">
-                        <p class="card-text text-primary fw-bold fs-5 mb-2">৳ {{ "%.2f"|format(product.price) }}</p>
-                        <a href="{{ url_for('main.product_detail', id=product.id) }}" class="btn btn-outline-primary btn-sm w-100 fw-bold">বিস্তারিত দেখুন</a>
+<!-- ২. ক্যাটাগরি ও সার্চ বার সেকশন -->
+<div class="row mb-4 align-items-center g-3" id="products-section">
+    <!-- ক্যাটাগরি ফিল্টার -->
+    <div class="col-md-7">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('main.home') }}" 
+               class="btn btn-sm {% if not selected_category %}btn-dark{% else %}btn-outline-dark{% endif %} rounded-pill px-3">
+                সকল পণ্য
+            </a>
+            {% for cat in categories %}
+                <a href="{{ url_for('main.home', category_id=cat.id) }}" 
+                   class="btn btn-sm {% if selected_category == cat.id %}btn-dark{% else %}btn-outline-dark{% endif %} rounded-pill px-3">
+                    {{ cat.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- প্রোডাক্ট সার্চ বার -->
+    <div class="col-md-5">
+        <form action="{{ url_for('main.home') }}" method="GET" class="d-flex">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="পণ্য খুঁজুন..." value="{{ request.args.get('search', '') }}">
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ৩. ফিচার্ড / ডিসকাউন্ট প্রোডাক্ট সেকশন (যদি থাকে) -->
+{% if featured_products and not selected_category and not request.args.get('search') %}
+<h4 class="fw-bold text-danger mb-3"><i class="fa-solid fa-fire me-2"></i>স্পেশাল অফার (Featured)</h4>
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+    {% for product in featured_products %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-danger border-opacity-25 rounded-3 position-relative">
+            <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fs-7 fw-bold rounded-end my-2">SPECIAL</span>
+            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="card-img-top p-2 rounded-3" alt="{{ product.name }}" style="height: 180px; object-fit: contain;">
+            <div class="card-body d-flex flex-column p-2 p-md-3">
+                <h6 class="card-title text-truncate fw-bold mb-2">{{ product.name }}</h6>
+                <div class="mt-auto">
+                    <div class="mb-2">
+                        {% if product.discount_price %}
+                            <span class="fs-5 fw-bold text-success">৳{{ "%.0f"|format(product.discount_price) }}</span>
+                            <small class="text-muted text-decoration-line-through ms-1">৳{{ "%.0f"|format(product.price) }}</small>
+                        {% else %}
+                            <span class="fs-5 fw-bold text-dark">৳{{ "%.0f"|format(product.price) }}</span>
+                        {% endif %}
                     </div>
+                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100 fw-bold" {% if product.stock <= 0 %}disabled{% endif %}>
+                            {% if product.stock > 0 %}<i class="fa-solid fa-cart-plus"></i> কার্টে রাখুন{% else %}স্টক আউট{% endif %}
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-        {% else %}
-        <div class="col-12 text-center py-5">
-            <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">কোনো পণ্য পাওয়া যায়নি!</h5>
-        </div>
-        {% endfor %}
     </div>
+    {% endfor %}
 </div>
+{% endif %}
+
+<!-- ৪. সকল প্রোডাক্ট তালিকা -->
+<h4 class="fw-bold mb-3">আমাদের পণ্যসমূহ</h4>
+{% if products %}
+<div class="row row-cols-2 row-cols-md-4 g-3">
+    {% for product in products %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+            <a href="{{ url_for('main.product_detail', id=product.id) }}" class="text-decoration-none text-dark">
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="card-img-top p-2 rounded-3" alt="{{ product.name }}" style="height: 180px; object-fit: contain;">
+            </a>
+            <div class="card-body d-flex flex-column p-2 p-md-3">
+                <a href="{{ url_for('main.product_detail', id=product.id) }}" class="text-decoration-none text-dark">
+                    <h6 class="card-title text-truncate fw-bold mb-1">{{ product.name }}</h6>
+                </a>
+                <small class="text-muted d-block mb-2">{{ product.category.name if product.category else '' }}</small>
+                
+                <div class="mt-auto">
+                    <div class="mb-2">
+                        {% if product.discount_price %}
+                            <span class="fs-6 fw-bold text-success">৳{{ "%.0f"|format(product.discount_price) }}</span>
+                            <small class="text-muted text-decoration-line-through ms-1">৳{{ "%.0f"|format(product.price) }}</small>
+                        {% else %}
+                            <span class="fs-6 fw-bold text-dark">৳{{ "%.0f"|format(product.price) }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-primary w-100 fw-bold" {% if product.stock <= 0 %}disabled{% endif %}>
+                            {% if product.stock > 0 %}
+                                <i class="fa-solid fa-cart-plus me-1"></i> কার্টে যোগ করুন
+                            {% else %}
+                                স্টক আউট
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info text-center my-5 p-4 shadow-sm">
+    <h5>কোনো পণ্য পাওয়া যায়নি!</h5>
+    <p class="mb-0">অন্য কোনো ক্যাটাগরি বেছে নিন অথবা পরবর্তীতে আবার চেষ্টা করুন।</p>
+</div>
+{% endif %}
 {% endblock %}
