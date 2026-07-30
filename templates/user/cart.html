@@ -22,7 +22,6 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <!-- ছবির এরর এড়ানোর জন্য নিরাপদ চেক -->
                             {% if item.product.image %}
                                 <img src="{{ item.product.image }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-3">
                             {% elif item.product.image_url %}
@@ -52,7 +51,7 @@
 
     <div class="row mt-4 align-items-center">
         <div class="col-md-6">
-            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <a href="/" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> আরও কেনাকাটা করুন
             </a>
         </div>
@@ -67,7 +66,7 @@
     <div class="text-center py-5">
         <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
         <h4 class="mt-3 text-muted">আপনার কার্ট বর্তমানে খালি!</h4>
-        <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">কেনাকাটা শুরু করুন</a>
+        <a href="/" class="btn btn-primary mt-3">কেনাকাটা শুরু করুন</a>
     </div>
     {% endif %}
 </div>
