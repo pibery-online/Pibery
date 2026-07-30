@@ -90,6 +90,25 @@ def product_detail(id):
     return render_template('user/product.html', product=product)
 
 
+# ==================== POLICY & INFORMATION ROUTES ====================
+
+@main.route('/about-us')
+def about_us():
+    return render_template('about.html')
+
+@main.route('/contact-us')
+def contact_us():
+    return render_template('contact.html')
+
+@main.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy.html')
+
+@main.route('/return-policy')
+def return_policy():
+    return render_template('return.html')
+
+
 # ==================== CART & CHECKOUT SYSTEM ====================
 
 @main.route('/add_to_cart/<int:product_id>', methods=['POST'])
@@ -423,19 +442,26 @@ def admin_products():
         category_id = int(request.form.get('category_id'))
         is_featured = True if request.form.get('is_featured') else False
         
-        image_file = request.files.get('image')
+        # ১. ইমেজ ইউআরএল বা একাধিক লিংক হ্যান্ডেল করার লজিক
+        image_urls_input = request.form.get('image_urls', '').strip()
         filename = 'default.jpg'
 
-        if image_file and allowed_file(image_file.filename):
-            orig_filename = secure_filename(image_file.filename)
-            filename = f"{os.urandom(8).hex()}_{orig_filename}"
-            
-            upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
+        if image_urls_input:
+            # যদি সরাসরি URL লিংক এড করা হয়
+            filename = image_urls_input
+        else:
+            # ২. ফাইল আপলোডের ব্যাকআপ অপশন
+            image_file = request.files.get('image')
+            if image_file and allowed_file(image_file.filename):
+                orig_filename = secure_filename(image_file.filename)
+                filename = f"{os.urandom(8).hex()}_{orig_filename}"
+                
+                upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
 
-            upload_path = os.path.join(upload_folder, filename)
-            image_file.save(upload_path)
+                upload_path = os.path.join(upload_folder, filename)
+                image_file.save(upload_path)
 
         new_product = Product(
             name=name, description=description, price=price,
