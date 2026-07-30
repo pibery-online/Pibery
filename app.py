@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 from models import db, User
 from flask_login import LoginManager
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -18,14 +19,41 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # SQLAlchemy 2.0 সামঞ্জস্যপূর্ণ আধুনিক মেথড
+    return db.session.get(User, int(user_id))
 
 # Register Blueprints
 from routes import main
 app.register_blueprint(main)
 
+# অটোমেটিক এডমিন ইউজার তৈরি/আপডেট করার ফাংশন
+def init_admin():
+    email = "info.pibery@gmail.com"
+    password = "Pibery.1280.Ahmed#COM"
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        new_admin = User(
+            username="Pibery Admin",
+            email=email,
+            password=generate_password_hash(password),
+            is_admin=True
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+        print("🎉 Admin account created successfully!")
+    else:
+        user.password = generate_password_hash(password)
+        user.is_admin = True
+        db.session.commit()
+        print("✅ Admin account updated successfully!")
+
 with app.app_context():
     db.create_all()
+    try:
+        init_admin()
+    except Exception as e:
+        print("Admin creation notice:", e)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
