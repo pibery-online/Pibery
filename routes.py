@@ -10,11 +10,13 @@ main = Blueprint('main', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 
+# সিক্রেট এডমিন প্রিফিক্স ইউআরএল
+SECRET_ADMIN_PREFIX = '/pibery-secure-control-8831'
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ==================== CONTEXT PROCESSORS ====================
-# সকল টেমপ্লেটে cart_count ভ্যারিয়েবলটি স্বয়ংক্রিয়ভাবে পাঠাতে
 @main.context_processor
 def inject_cart_count():
     cart = session.get('cart', {})
@@ -22,12 +24,12 @@ def inject_cart_count():
     return dict(cart_count=cart_count)
 
 
-# Admin Access Decorator
+# Admin Access Decorator (কঠোর সিকিউরিটি গার্ড)
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
-            flash('এই পেজে প্রবেশের অধিকার শুধুমাত্র এডমিনের রয়েছে!', 'danger')
+            flash('অনুমতি বিহীন প্রবেশ নিষিদ্ধ!', 'danger')
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
@@ -35,7 +37,6 @@ def admin_required(f):
 
 # ==================== USER ROUTES ====================
 
-# ১. হোমপেজ
 @main.route('/')
 def home():
     category_id = request.args.get('category_id', type=int)
@@ -52,7 +53,6 @@ def home():
     products = query.order_by(Product.created_at.desc()).all()
     return render_template('user/index.html', products=products, categories=categories, selected_category=category_id)
 
-# ২. প্রোডাক্ট ডিটেইলস পেজ
 @main.route('/product/<int:id>')
 def product_detail(id):
     product = Product.query.get_or_404(id)
@@ -61,7 +61,6 @@ def product_detail(id):
 
 # ==================== CART & CHECKOUT SYSTEM ====================
 
-# ৩. কার্টে পণ্য যোগ করা
 @main.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
@@ -82,7 +81,6 @@ def add_to_cart(product_id):
     flash(f'"{product.name}" কার্টে যোগ করা হয়েছে!', 'success')
     return redirect(request.referrer or url_for('main.home'))
 
-# ৪. কার্ট পেজ
 @main.route('/cart')
 def view_cart():
     cart = session.get('cart', {})
@@ -102,7 +100,6 @@ def view_cart():
 
     return render_template('user/cart.html', cart_items=cart_items, total_price=total_price)
 
-# ৫. কার্টের পরিমাণ আপডেট
 @main.route('/update_cart/<int:product_id>', methods=['POST'])
 def update_cart(product_id):
     quantity = int(request.form.get('quantity', 1))
@@ -118,7 +115,6 @@ def update_cart(product_id):
 
     return redirect(url_for('main.view_cart'))
 
-# ৬. কার্ট থেকে পণ্য মুছে ফেলা
 @main.route('/remove_from_cart/<int:product_id>')
 def remove_from_cart(product_id):
     p_id = str(product_id)
@@ -129,7 +125,6 @@ def remove_from_cart(product_id):
 
     return redirect(url_for('main.view_cart'))
 
-# ৭. চেকআউট (Order Placement)
 @main.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     cart = session.get('cart', {})
@@ -181,7 +176,6 @@ def checkout():
 
     return render_template('user/checkout.html', cart_items=cart_items, total_price=total_price)
 
-# ৮. গ্রাহকের নিজের অর্ডার তালিকা
 @main.route('/orders')
 @login_required
 def my_orders():
@@ -209,11 +203,11 @@ def register():
             return redirect(url_for('main.register'))
 
         hashed_pw = generate_password_hash(password)
-        is_admin_user = True if User.query.count() == 0 else False
 
+        # সিকিউরিটি রুল: ওয়েবসাইট থেকে যে কেউই রেজিস্টার করুক, সে সবসময় সাধারণ কাস্টমার (is_admin=False) হবে।
         new_user = User(
             username=username, email=email, password=hashed_pw,
-            phone=phone, address=address, is_admin=is_admin_user
+            phone=phone, address=address, is_admin=False
         )
         db.session.add(new_user)
         db.session.commit()
@@ -237,6 +231,8 @@ def login():
             login_user(user)
             flash(f'স্বাগতম {user.username}!', 'success')
             next_page = request.args.get('next')
+            if user.is_admin:
+                return redirect(url_for('main.admin_dashboard'))
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:
             flash('ভুল ইমেইল বা পাসওয়ার্ড!', 'danger')
@@ -256,9 +252,9 @@ def profile():
     return render_template('user/profile.html')
 
 
-# ==================== ADMIN ROUTES ====================
+# ==================== SECRET ADMIN ROUTES ====================
 
-@main.route('/admin/dashboard')
+@main.route(f'{SECRET_ADMIN_PREFIX}/dashboard')
 @login_required
 @admin_required
 def admin_dashboard():
@@ -277,7 +273,7 @@ def admin_dashboard():
                            total_orders=total_orders,
                            total_sales=total_sales)
 
-@main.route('/admin/orders')
+@main.route(f'{SECRET_ADMIN_PREFIX}/orders')
 @login_required
 @admin_required
 def admin_orders():
@@ -289,7 +285,7 @@ def admin_orders():
         
     return render_template('admin/orders.html', orders=orders, current_status=status_filter)
 
-@main.route('/admin/order/update_status/<int:order_id>', methods=['POST'])
+@main.route(f'{SECRET_ADMIN_PREFIX}/order/update_status/<int:order_id>', methods=['POST'])
 @login_required
 @admin_required
 def update_order_status(order_id):
@@ -303,7 +299,7 @@ def update_order_status(order_id):
     
     return redirect(url_for('main.admin_orders'))
 
-@main.route('/admin/categories', methods=['GET', 'POST'])
+@main.route(f'{SECRET_ADMIN_PREFIX}/categories', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_categories():
@@ -323,7 +319,7 @@ def admin_categories():
     categories = Category.query.all()
     return render_template('admin/categories.html', categories=categories)
 
-@main.route('/admin/products', methods=['GET', 'POST'])
+@main.route(f'{SECRET_ADMIN_PREFIX}/products', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def admin_products():
@@ -356,7 +352,7 @@ def admin_products():
     categories = Category.query.all()
     return render_template('admin/products.html', products=products, categories=categories)
 
-@main.route('/admin/product/delete/<int:id>', methods=['POST'])
+@main.route(f'{SECRET_ADMIN_PREFIX}/product/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
 def delete_product(id):
