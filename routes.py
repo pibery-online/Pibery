@@ -1,4 +1,6 @@
 import os
+import threading
+import requests
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,6 +14,29 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
 
 # সিক্রেট এডমিন প্রিফিক্স ইউআরএল
 SECRET_ADMIN_PREFIX = '/pibery-secure-control-8831'
+
+# ==================== TELEGRAM BOT CONFIGURATION ====================
+TELEGRAM_BOT_TOKEN = "8724206394:AAFKbv-4rMAtDXrFg58ldcu2kawEG4Nhw4Y"
+TELEGRAM_CHAT_ID = "8898401309"
+
+def _send_telegram_async(message):
+    """টেলিগ্রাম এপিআইতে ব্যাকগ্রাউন্ডে মেসেজ পাঠানোর ফাংশন"""
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        requests.post(url, data=payload, timeout=8)
+    except Exception as e:
+        print(f"Telegram Notification Error: {e}")
+
+def send_telegram_notification(message):
+    """ব্যাকগ্রাউন্ড থ্রেডে টেলিগ্রাম মেসেজ রান করার জন্য হেলপার"""
+    thread = threading.Thread(target=_send_telegram_async, args=(message,))
+    thread.daemon = True
+    thread.start()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -100,7 +125,6 @@ def view_cart():
     for p_id, qty in cart.items():
         product = db.session.get(Product, int(p_id))
         if product:
-            # ডিসকাউন্ট থাকলে অফার প্রাইজ হিসাব করবে
             effective_price = product.discount_price if product.discount_price else product.price
             subtotal = effective_price * qty
             total_price += subtotal
@@ -180,6 +204,7 @@ def checkout():
         db.session.add(order)
         db.session.commit()
 
+        items_summary = ""
         for item in cart_items:
             order_item = OrderItem(
                 order_id=order.id,
@@ -189,9 +214,25 @@ def checkout():
             )
             item['product'].stock -= item['quantity']
             db.session.add(order_item)
+            items_summary += f"  • {item['product'].name} (x{item['quantity']}) - ৳{item['subtotal']:.0f}\n"
 
         db.session.commit()
         session.pop('cart', None)
+
+        # 🚀 TELEGRAM NOTIFICATION FOR NEW ORDER (BACKGROUND)
+        tg_msg = (
+            f"🛍️ *Pibery-তে নতুন অর্ডার এসেছে! (#Order-{order.id})*\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"👤 *কাস্টমার:* {name}\n"
+            f"📞 *মোবাইল:* {phone}\n"
+            f"📍 *ঠিকানা:* {address}\n\n"
+            f"💳 *পেমেন্ট:* {payment_method}\n"
+            f"🔢 *TrxID:* `{transaction_id if transaction_id else 'N/A'}`\n\n"
+            f"📦 *পণ্যসমূহ:*\n{items_summary}"
+            f"💰 *সর্বমোট মূল্য:* ৳{total_price:.0f}\n"
+            f"━━━━━━━━━━━━━━━━━━"
+        )
+        send_telegram_notification(tg_msg)
 
         flash(f'অভিনন্দন! আপনার অর্ডারটি (Order #{order.id}) সফলভাবে গ্রহণ করা হয়েছে।', 'success')
         return redirect(url_for('main.my_orders' if current_user.is_authenticated else 'main.home'))
@@ -216,8 +257,8 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        phone = request.form.get('phone')
-        address = request.form.get('address')
+        phone = request.form.get('phone', '')
+        address = request.form.get('address', '')
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
@@ -232,6 +273,18 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
+
+        # 🚀 TELEGRAM NOTIFICATION FOR NEW SIGNUP (BACKGROUND)
+        tg_msg = (
+            f"🎉 *নতুন ইউজার রেজিস্ট্রেশন করেছেন!*\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"👤 *ইউজারনেম:* {username}\n"
+            f"📧 *ইমেইল:* {email}\n"
+            f"📱 *ফোন:* {phone if phone else 'N/A'}\n"
+            f"📍 *ঠিকানা:* {address if address else 'N/A'}\n"
+            f"━━━━━━━━━━━━━━━━━━"
+        )
+        send_telegram_notification(tg_msg)
 
         flash('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে লগইন করুন।', 'success')
         return redirect(url_for('main.login'))
@@ -250,6 +303,19 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+
+            # 🚀 TELEGRAM NOTIFICATION FOR USER LOGIN (BACKGROUND)
+            role_badge = "👑 Admin" if user.is_admin else "👤 Customer"
+            tg_msg = (
+                f"🔑 *ইউজার লগইন করেছেন*\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"👤 *নাম:* {user.username} ({role_badge})\n"
+                f"📧 *ইমেইল:* {user.email}\n"
+                f"📱 *ফোন:* {user.phone if user.phone else 'N/A'}\n"
+                f"━━━━━━━━━━━━━━━━━━"
+            )
+            send_telegram_notification(tg_msg)
+
             flash(f'স্বাগতম {user.username}!', 'success')
             next_page = request.args.get('next')
             if user.is_admin:
@@ -364,7 +430,6 @@ def admin_products():
             orig_filename = secure_filename(image_file.filename)
             filename = f"{os.urandom(8).hex()}_{orig_filename}"
             
-            # আপলোড ফোল্ডার না থাকলে বানিয়ে নেবে
             upload_folder = current_app.config.get('UPLOAD_FOLDER', 'static/uploads')
             if not os.path.exists(upload_folder):
                 os.makedirs(upload_folder)
