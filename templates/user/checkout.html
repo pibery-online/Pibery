@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}চেকআউট - Pibery{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">অর্ডার কনফার্মেশন</h2>
+    
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card p-4 shadow-sm mb-4">
+                <h4 class="card-title mb-3">ডেলিভারি তথ্য</h4>
+                <form action="{{ url_for('main.place_order') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">আপনার পূর্ণ নাম</label>
+                        <input type="text" name="name" class="form-control" required placeholder="যেমন: রহিম আহমেদ">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">মোবাইল নম্বর</label>
+                        <input type="tel" name="phone" class="form-control" required placeholder="017XXXXXXXX">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">সম্পূর্ণ ঠিকানা</label>
+                        <textarea name="address" class="form-control" rows="3" required placeholder="বাসা নম্বর, রোড, এলাকা, জেলা"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">পেমেন্ট মেথড</label>
+                        <select name="payment_method" class="form-select">
+                            <option value="Cash on Delivery">ক্যাশ অন ডেলিভারি (Cash on Delivery)</option>
+                            <option value="bKash">বিকাশ (bKash)</option>
+                            <option value="Nagad">নগদ (Nagad)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 btn-lg mt-3">অর্ডার নিশ্চিত করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card p-4 shadow-sm">
+                <h4 class="card-title mb-3">অর্ডার সামারি</h4>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <h6 class="my-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">পরিমাণ: {{ item.quantity }}</small>
+                        </div>
+                        <span class="text-muted">৳ {{ item.subtotal }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 fw-bold">
+                        <span>সর্বমোট</span>
+                        <span class="text-success fs-5">৳ {{ total_price }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
