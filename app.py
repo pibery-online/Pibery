@@ -48,12 +48,13 @@ def init_admin():
         db.session.commit()
         print("✅ Admin account updated successfully!")
 
+# ডাটাবেজ টেবিল রিফ্রেশ এবং এডমিন তৈরি
 with app.app_context():
-    db.create_all()
     try:
+        db.create_all()
         init_admin()
     except Exception as e:
-        print("Admin creation notice:", e)
+        print("Database initialization note:", e)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
