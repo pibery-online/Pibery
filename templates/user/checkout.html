@@ -9,8 +9,8 @@
         <div class="col-md-7">
             <div class="card p-4 shadow-sm mb-4">
                 <h4 class="card-title mb-3">ডেলিভারি তথ্য</h4>
-                <!-- সরাসরি ফর্মে অ্যাকশন রুট দেওয়া হয়েছে -->
-                <form action="/place-order" method="POST">
+                <!-- ডায়নামিক রাউট পয়েন্টার -->
+                <form action="{{ url_for('main.checkout') if 'main.checkout' in url_for.__globals__['current_app'].view_functions else '/checkout' }}" method="POST">
                     <div class="mb-3">
                         <label class="form-label">আপনার পূর্ণ নাম</label>
                         <input type="text" name="name" class="form-control" required placeholder="যেমন: রহিম আহমেদ">
