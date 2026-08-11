@@ -133,7 +133,7 @@ def track_order():
         order = Order.query.filter_by(id=order_id).first()
         if not order:
             flash('এই আইডি দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি!', 'danger')
-    return render_template('user/track_order.html', order=order, order_id=order_id)
+    return render_template('track_order.html', order=order, order_id=order_id)
 
 @main.route('/wishlist')
 @login_required
