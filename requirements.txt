@@ -1,4 +1,4 @@
-blinker==1.9.0
+Blinker==1.9.0
 certifi==2026.7.22
 charset-normalizer==3.4.9
 click==8.4.2
