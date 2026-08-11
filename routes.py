@@ -4,22 +4,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 import requests
+import threading
 from extensions import db
 from models import User, Product, Category, CartItem, Order, OrderItem, Wishlist
 
 main = Blueprint('main', __name__)
 
-# টেলিগ্রাম নোটিফিকেশন পাঠানোর ফাংশন
+# টেলিগ্রাম নোটিফিকেশন যেন সাইটকে স্লো বা টাইমআউট না করে, তাই থ্রেডিং ব্যবহার করা হয়েছে
+def send_telegram_async(bot_token, chat_id, message):
+    try:
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+        requests.post(url, json=payload, timeout=10)
+    except Exception as e:
+        print("Telegram Error:", e)
+
 def send_telegram_message(message):
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
     chat_id = os.environ.get('TELEGRAM_CHAT_ID')
     if bot_token and chat_id:
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
-        try:
-            requests.post(url, json=payload, timeout=5)
-        except Exception as e:
-            print("Telegram Error:", e)
+        threading.Thread(target=send_telegram_async, args=(bot_token, chat_id, message)).start()
 
 @main.route('/')
 def home():
@@ -128,7 +132,7 @@ def checkout():
 
         db.session.commit()
 
-        # নতুন অর্ডার আসলে টেলিগ্রাম বটে নোটিফিকেশন পাঠানো
+        # টেলিগ্রাম নোটিফিকেশন
         msg = f"<b>🛒 নতুন অর্ডার এসেছে!</b>\nঅর্ডার আইডি: {order.id}\nনাম: {name}\nফোন: {phone}\nমোট মূল্য: ৳{total_price}\nপেমেন্ট: {payment_method}"
         send_telegram_message(msg)
 
@@ -151,29 +155,34 @@ def track_order():
         order = Order.query.filter_by(id=order_id).first()
         if not order:
             flash('এই আইডি দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি!', 'danger')
-    return render_template('track_order.html', order=order, order_id=order_id)
+    return render_template('user/track_order.html', order=order, order_id=order_id)
 
 @main.route('/wishlist')
 @login_required
 def view_wishlist():
     wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
-    return render_template('wishlist.html', wishlist_items=wishlist_items)
+    return render_template('user/wishlist.html', wishlist_items=wishlist_items)
 
+# --- User Profile Edit Route ---
 @main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
-        current_user.username = request.form.get('username')
-        current_user.email = request.form.get('email')
-        
-        new_password = request.form.get('password')
-        if new_password:
-            current_user.password = generate_password_hash(new_password)
-            
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if username:
+            current_user.username = username
+        if email:
+            current_user.email = email
+        if password:
+            current_user.password = generate_password_hash(password)
+
         db.session.commit()
         flash('প্রোফাইল সফলভাবে আপডেট করা হয়েছে!', 'success')
         return redirect(url_for('main.profile'))
-        
+
     return render_template('user/profile.html')
 
 @main.route('/register', methods=['GET', 'POST'])
@@ -187,7 +196,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        # নতুন ইউজার সাইনআপ করলে টেলিগ্রাম বটে মেসেজ পাঠানো
+        # টেলিগ্রাম নোটিফিকেশন
         msg = f"<b>👤 নতুন ইউজার রেজিস্টার্ড হয়েছে!</b>\nইউজারনেম: {username}\nইমেইল: {email}"
         send_telegram_message(msg)
 
@@ -223,23 +232,30 @@ def admin_dashboard():
         return redirect(url_for('main.home'))
     return render_template('admin/dashboard.html')
 
+# --- Admin Profile Edit Route ---
 @main.route('/admin/profile', methods=['GET', 'POST'])
 @login_required
 def admin_profile():
     if not current_user.is_admin:
         flash('আপনার অনুমতি নেই!', 'danger')
         return redirect(url_for('main.home'))
-    
+
     if request.method == 'POST':
-        current_user.username = request.form.get('username')
-        current_user.email = request.form.get('email')
-        new_password = request.form.get('password')
-        if new_password:
-            current_user.password = generate_password_hash(new_password)
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if username:
+            current_user.username = username
+        if email:
+            current_user.email = email
+        if password:
+            current_user.password = generate_password_hash(password)
+
         db.session.commit()
         flash('এডমিন প্রোফাইল সফলভাবে আপডেট হয়েছে!', 'success')
         return redirect(url_for('main.admin_profile'))
-        
+
     return render_template('admin/profile.html', admin=current_user)
 
 @main.route('/admin/products')
