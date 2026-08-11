@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}আমার উইশলিস্ট - Pibery{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4"><i class="fa-solid fa-heart text-danger me-2"></i>আমার উইশলিস্ট</h2>
+
+    {% if wishlist_items %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for item in wishlist_items %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-3">
+                <img src="{{ item.product.image if item.product.image.startswith('http') or item.product.image.startswith('/') else url_for('static', filename='uploads/' + item.product.image) }}" class="card-img-top p-3" alt="{{ item.product.name }}" style="height: 200px; object-fit: contain;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold text-truncate">{{ item.product.name }}</h5>
+                    <p class="text-success fw-bold fs-5 mb-3">৳{{ item.product.discount_price or item.product.price }}</p>
+                    <div class="mt-auto d-flex gap-2">
+                        <form action="{{ url_for('main.add_to_cart', product_id=item.product.id) }}" method="POST" class="flex-grow-1">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="fa-solid fa-cart-plus me-1"></i> কার্টে নিন</button>
+                        </form>
+                        <form action="{{ url_for('main.remove_from_wishlist', id=item.id) }}" method="POST">
+                            <button type="submit" class="btn btn-outline-danger" title="মুছে ফেলুন"><i class="fa-solid fa-trash-can"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 card shadow-sm p-5 border-0">
+        <i class="fa-regular fa-heart text-muted opacity-50" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">আপনার উইশলিস্ট খালি!</h4>
+        <a href="{{ url_for('main.home') }}" class="btn btn-primary mt-3">কেনাকাটা শুরু করুন</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
