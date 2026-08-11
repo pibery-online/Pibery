@@ -291,3 +291,4 @@ def admin_orders():
         return redirect(url_for('main.home'))
     orders = Order.query.order_by(Order.created_at.desc()).all()
     return render_template('admin/orders.html', orders=orders)
+ 
