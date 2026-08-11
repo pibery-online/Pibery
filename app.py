@@ -19,7 +19,6 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    # SQLAlchemy 2.0 সামঞ্জস্যপূর্ণ আধুনিক মেথড
     return db.session.get(User, int(user_id))
 
 # Register Blueprints
