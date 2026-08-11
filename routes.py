@@ -139,7 +139,7 @@ def track_order():
 @login_required
 def view_wishlist():
     wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
-    return render_template('user/wishlist.html', wishlist_items=wishlist_items)
+    return render_template('wishlist.html', wishlist_items=wishlist_items)
 
 @main.route('/profile')
 @login_required
