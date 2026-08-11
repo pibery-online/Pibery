@@ -17,7 +17,7 @@ def send_telegram_message(message):
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
         try:
-            requests.post(url, json=payload)
+            requests.post(url, json=payload, timeout=5)
         except Exception as e:
             print("Telegram Error:", e)
 
@@ -128,8 +128,8 @@ def checkout():
 
         db.session.commit()
 
-        # অর্ডার হলে টেলিগ্রামে মেসেজ পাঠানোর ট্রিগার
-        msg = f"<b>নতুন অর্ডার এসেছে! 🛒</b>\nঅর্ডার আইডি: {order.id}\nনাম: {name}\nফোন: {phone}\nমোট মূল্য: ৳{total_price}\nপেমেন্ট: {payment_method}"
+        # নতুন অর্ডার আসলে টেলিগ্রাম বটে নোটিফিকেশন পাঠানো
+        msg = f"<b>🛒 নতুন অর্ডার এসেছে!</b>\nঅর্ডার আইডি: {order.id}\nনাম: {name}\nফোন: {phone}\nমোট মূল্য: ৳{total_price}\nপেমেন্ট: {payment_method}"
         send_telegram_message(msg)
 
         flash(f'আপনার অর্ডার সফলভাবে সম্পন্ন হয়েছে!', 'success')
@@ -187,8 +187,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        # নতুন রেজিস্ট্রেশন হলে টেলিগ্রামে মেসেজ পাঠানো
-        msg = f"<b>নতুন ইউজার রেজিস্টার্ড হয়েছে! 👤</b>\nইউজারনেম: {username}\nইমেইল: {email}"
+        # নতুন ইউজার সাইনআপ করলে টেলিগ্রাম বটে মেসেজ পাঠানো
+        msg = f"<b>👤 নতুন ইউজার রেজিস্টার্ড হয়েছে!</b>\nইউজারনেম: {username}\nইমেইল: {email}"
         send_telegram_message(msg)
 
         flash('রেজিস্ট্রেশন সফল!', 'success')
@@ -227,6 +227,7 @@ def admin_dashboard():
 @login_required
 def admin_profile():
     if not current_user.is_admin:
+        flash('আপনার অনুমতি নেই!', 'danger')
         return redirect(url_for('main.home'))
     
     if request.method == 'POST':
