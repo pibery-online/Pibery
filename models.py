@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask_login import UserMixin
-from extensions import db
+from app import db
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
