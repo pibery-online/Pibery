@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}অর্ডার ট্র্যাকিং - Pibery{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 p-4 rounded-3">
+                <h3 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-truck-fast me-2"></i>অর্ডার ট্র্যাকিং</h3>
+                <p class="text-muted">আপনার অর্ডার নম্বর দিয়ে বর্তমান অবস্থা যাচাই করুন।</p>
+                
+                <form action="{{ url_for('main.track_order') }}" method="GET" class="input-group mb-4">
+                    <input type="text" name="order_id" class="form-control" placeholder="অর্ডার আইডি লিখুন (যেমন: 1)" value="{{ order_id or '' }}" required>
+                    <button class="btn btn-primary px-4 fw-bold" type="submit"><i class="fa-solid fa-magnifying-glass me-1"></i> ট্র্যাক করুন</button>
+                </form>
+
+                {% if order %}
+                <div class="card border bg-light p-3 rounded-3 mt-3">
+                    <h5 class="fw-bold text-dark mb-3">অর্ডার #{{ order.id }} এর তথ্য</h5>
+                    <p class="mb-1"><strong>তারিখ:</strong> {{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</p>
+                    <p class="mb-1"><strong>গ্রাহক:</strong> {{ order.customer_name }}</p>
+                    <p class="mb-1"><strong>ঠিকানা:</strong> {{ order.customer_address }}</p>
+                    <p class="mb-2"><strong>সর্বমোট:</strong> ৳{{ order.total_price }}</p>
+                    <p class="mb-3"><strong>স্ট্যাটাস:</strong> 
+                        <span class="badge 
+                            {% if order.status == 'Pending' %}bg-warning text-dark
+                            {% elif order.status == 'Processing' %}bg-info text-dark
+                            {% elif order.status == 'Shipped' %}bg-primary
+                            {% elif order.status == 'Delivered' %}bg-success
+                            {% else %}bg-danger{% endif %} fs-6">
+                            {{ order.status }}
+                        </span>
+                    </p>
+                    
+                    <h6 class="fw-bold text-secondary">পণ্য তালিকা:</h6>
+                    <ul class="list-group">
+                        {% for item in order.items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ item.product.name if item.product else 'Product' }} (x{{ item.quantity }})</span>
+                            <span class="fw-bold">৳{{ item.price * item.quantity }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
