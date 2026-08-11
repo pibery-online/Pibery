@@ -36,14 +36,14 @@ def product_detail(id):
     cart_count = 0
     if current_user.is_authenticated:
         cart_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=current_user.id).scalar() or 0
-    return render_template('product.html', product=product, cart_count=cart_count)
+    return render_template('user/product.html', product=product, cart_count=cart_count)
 
 @main.route('/cart')
 @login_required
 def view_cart():
     cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
     total_price = sum(item.product.discount_price * item.quantity if item.product.discount_price else item.product.price * item.quantity for item in cart_items)
-    return render_template('cart.html', cart_items=cart_items, total_price=total_price)
+    return render_template('user/cart.html', cart_items=cart_items, total_price=total_price)
 
 @main.route('/cart/add/<int:product_id>', methods=['POST'])
 @login_required
@@ -117,13 +117,13 @@ def checkout():
         flash(f'আপনার অর্ডার সফলভাবে সম্পন্ন হয়েছে!', 'success')
         return redirect(url_for('main.user_orders'))
 
-    return render_template('checkout.html', cart_items=cart_items, total_price=total_price)
+    return render_template('user/checkout.html', cart_items=cart_items, total_price=total_price)
 
 @main.route('/orders')
 @login_required
 def user_orders():
     orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
-    return render_template('orders.html', orders=orders)
+    return render_template('user/orders.html', orders=orders)
 
 @main.route('/track-order', methods=['GET', 'POST'])
 def track_order():
@@ -133,18 +133,18 @@ def track_order():
         order = Order.query.filter_by(id=order_id).first()
         if not order:
             flash('এই আইডি দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি!', 'danger')
-    return render_template('track_order.html', order=order, order_id=order_id)
+    return render_template('user/track_order.html', order=order, order_id=order_id)
 
 @main.route('/wishlist')
 @login_required
 def view_wishlist():
     wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
-    return render_template('wishlist.html', wishlist_items=wishlist_items)
+    return render_template('user/wishlist.html', wishlist_items=wishlist_items)
 
 @main.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html')
+    return render_template('user/profile.html')
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -158,7 +158,7 @@ def register():
         db.session.commit()
         flash('রেজিস্ট্রেশন সফল!', 'success')
         return redirect(url_for('main.login'))
-    return render_template('register.html')
+    return render_template('user/register.html')
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -170,7 +170,7 @@ def login():
             login_user(user)
             return redirect(url_for('main.home'))
         flash('ভুল ইমেইল বা পাসওয়ার্ড', 'danger')
-    return render_template('login.html')
+    return render_template('user/login.html')
 
 @main.route('/logout')
 @login_required
@@ -182,4 +182,4 @@ def logout():
 @main.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    return render_template('dashboard.html')
+    return render_template('admin/dashboard.html')
