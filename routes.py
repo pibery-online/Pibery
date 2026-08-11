@@ -27,7 +27,6 @@ def home():
     if current_user.is_authenticated:
         cart_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=current_user.id).scalar() or 0
 
-    # এখানে পাথ পরিবর্তন করে 'user/index.html' করা হয়েছে
     return render_template('user/index.html', products=products, categories=categories, 
                            featured_products=featured_products, selected_category=category_id, cart_count=cart_count)
 
@@ -142,6 +141,11 @@ def view_wishlist():
     wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
     return render_template('wishlist.html', wishlist_items=wishlist_items)
 
+@main.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
+
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -167,6 +171,13 @@ def login():
             return redirect(url_for('main.home'))
         flash('ভুল ইমেইল বা পাসওয়ার্ড', 'danger')
     return render_template('login.html')
+
+@main.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('লগআউট করা হয়েছে।', 'info')
+    return redirect(url_for('main.home'))
 
 @main.route('/admin/dashboard')
 @login_required
