@@ -196,11 +196,21 @@ def admin_products():
     products = Product.query.all()
     return render_template('admin/products.html', products=products)
 
-@main.route('/admin/categories')
+@main.route('/admin/categories', methods=['GET', 'POST'])
 @login_required
 def admin_categories():
     if not current_user.is_admin:
         return redirect(url_for('main.home'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        if name:
+            new_category = Category(name=name)
+            db.session.add(new_category)
+            db.session.commit()
+            flash('নতুন ক্যাটাগরি সফলভাবে যোগ করা হয়েছে!', 'success')
+            return redirect(url_for('main.admin_categories'))
+
     categories = Category.query.all()
     return render_template('admin/categories.html', categories=categories)
 
