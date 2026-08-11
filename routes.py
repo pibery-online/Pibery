@@ -179,7 +179,35 @@ def logout():
     flash('লগআউট করা হয়েছে।', 'info')
     return redirect(url_for('main.home'))
 
+# --- Admin Routes ---
 @main.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
+    if not current_user.is_admin:
+        flash('আপনার এই পেজে ঢোকার অনুমতি নেই!', 'danger')
+        return redirect(url_for('main.home'))
     return render_template('admin/dashboard.html')
+
+@main.route('/admin/products')
+@login_required
+def admin_products():
+    if not current_user.is_admin:
+        return redirect(url_for('main.home'))
+    products = Product.query.all()
+    return render_template('admin/products.html', products=products)
+
+@main.route('/admin/categories')
+@login_required
+def admin_categories():
+    if not current_user.is_admin:
+        return redirect(url_for('main.home'))
+    categories = Category.query.all()
+    return render_template('admin/categories.html', categories=categories)
+
+@main.route('/admin/orders')
+@login_required
+def admin_orders():
+    if not current_user.is_admin:
+        return redirect(url_for('main.home'))
+    orders = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template('admin/orders.html', orders=orders)
