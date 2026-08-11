@@ -184,7 +184,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash('সফলভাবে রেজিস্ট్రేশন সম্পন্ন হয়েছে! এখন লগইন করুন।', 'success')
+        flash('সফলভাবে রেজিস্ট্রেশন সম্পন্ন হয়েছে! এখন লগইন করুন।', 'success')
         return redirect(url_for('main.login'))
 
     return render_template('register.html')
