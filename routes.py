@@ -10,7 +10,7 @@ from models import User, Product, Category, CartItem, Order, OrderItem, Wishlist
 
 main = Blueprint('main', __name__)
 
-# টেলিগ্রাম নোটিফিকেশন যেন সাইটকে স্লো বা টাইমআউট না করে, তাই থ্রেডিং ব্যবহার করা হয়েছে
+# টেলিগ্রাম নোটিফিকেশন পাঠানোর ফাংশন (থ্রেডিং সহ)
 def send_telegram_async(bot_token, chat_id, message):
     try:
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -25,6 +25,7 @@ def send_telegram_message(message):
     if bot_token and chat_id:
         threading.Thread(target=send_telegram_async, args=(bot_token, chat_id, message)).start()
 
+# হোমপেজ এবং ক্যাটাগরি ফিল্টারিং রাউট
 @main.route('/')
 def home():
     category_id = request.args.get('category_id', type=int)
@@ -291,4 +292,3 @@ def admin_orders():
         return redirect(url_for('main.home'))
     orders = Order.query.order_by(Order.created_at.desc()).all()
     return render_template('admin/orders.html', orders=orders)
- 
