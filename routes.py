@@ -267,6 +267,50 @@ def admin_products():
     products = Product.query.all()
     return render_template('admin/products.html', products=products)
 
+# --- Admin Product Add Route (ক্যাটাগরি যুক্ত করার মূল রাউট) ---
+@main.route('/admin/products/add', methods=['GET', 'POST'])
+@login_required
+def admin_add_product():
+    if not current_user.is_admin:
+        return redirect(url_for('main.home'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = float(request.form.get('price', 0))
+        discount_price = request.form.get('discount_price')
+        discount_price = float(discount_price) if discount_price else None
+        stock = int(request.form.get('stock', 0))
+        category_id = request.form.get('category_id') # ক্যাটাগরি আইডি রিসিভ করা
+        description = request.form.get('description')
+        is_featured = True if request.form.get('is_featured') else False
+
+        # ছবি আপলোড হ্যান্ডেল করা
+        image_file = request.files.get('image')
+        image_filename = None
+        if image_file and image_file.filename != '':
+            image_filename = secure_filename(image_file.filename)
+            upload_folder = os.path.join('static', 'uploads')
+            os.makedirs(upload_folder, exist_ok=True)
+            image_file.save(os.path.join(upload_folder, image_filename))
+
+        new_product = Product(
+            name=name,
+            price=price,
+            discount_price=discount_price,
+            stock=stock,
+            category_id=category_id if category_id else None,
+            description=description,
+            image=image_filename,
+            is_featured=is_featured
+        )
+        db.session.add(new_product)
+        db.session.commit()
+        flash('প্রোডাক্ট সফলভাবে যোগ করা হয়েছে!', 'success')
+        return redirect(url_for('main.admin_products'))
+
+    categories = Category.query.all()
+    return render_template('admin/add_product.html', categories=categories)
+
 @main.route('/admin/categories', methods=['GET', 'POST'])
 @login_required
 def admin_categories():
